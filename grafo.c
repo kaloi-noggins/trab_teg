@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "grafo.h"
+#include "headers/grafo.h"
 
 void adicionar_aresta(Grafo *grafo, int x, int y) {
    add_elem_lista(grafo->vetor_vertices[x], y);

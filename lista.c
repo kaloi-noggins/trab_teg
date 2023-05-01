@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "lista.h"
+#include "headers/lista.h"
 
 Lista *cria_lista(){ 
     Lista *nova_lista = (Lista*)malloc(sizeof(Lista));

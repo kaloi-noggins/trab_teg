@@ -167,9 +167,9 @@ int main()
     // para a visualização do grafo
     system("python scripts/csv_to_dot.py");
     // utiliza o graphviz para renderizar o grafo gerado
-    system("sfdp -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
-    // limpeza dos arquivos temporarios
-    system("rm arquivos/dataset arquivos/grafo.dot");
+    system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
+    // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
+    //system("rm arquivos/dataset arquivos/grafo.dot");
 
     return 1;
 }

@@ -1,12 +1,10 @@
 adjacencias = []
 
-with open("./arquivos/grafo.csv","r") as f:
+with open("./arquivos/lista_adjacencias.csv","r") as f:
     for line in f:
         line = line.strip()
         line = line.replace(",","--")
         adjacencias.append(line)
-
-print(adjacencias)
 
 str_adj = " "
 for i in range(len(adjacencias)-1):

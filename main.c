@@ -12,15 +12,23 @@
 
 int main()
 {
+    
+    // limiar que sera usado para a construção da lista de adjacencias
+    float limiar = 0.3;
+
+    printf("Entre com o limiar a ser usado para o cáculo das adjacencias (entre 0 e 1, 0.3 por padrão):\n");
+    scanf("%f",&limiar);
+
     // executa o script de python para fazer o pré tratamento o dataset
     // o pré tratamento consiste na remoção da primeira linha e ultima coluna e
     // a substitução dos , por espaços em branco para tokenização com o strtok
+    printf("Fazendo pré processamento do dataset..\n");
     system("python scripts/dataset_preprocessing.py");
 
     // abertura dos arquivos
     FILE *data_set = fopen("arquivos/dataset", "r");
-    FILE *distancias_f = fopen("arquivos/distancias.csv", "w");
-    FILE *grafo_f = fopen("arquivos/grafo.csv", "w");
+    FILE *distancias_f = fopen("arquivos/distancias_normalizadas.csv", "w");
+    FILE *grafo_f = fopen("arquivos/lista_adjacencias.csv", "w");
 
     if (!data_set)
         return -1;
@@ -136,7 +144,7 @@ int main()
     {
         for (size_t j = i + 1; j < NUM_LINHAS; j++)
         {
-            if (distancias[i][j] <= 0.3)
+            if (distancias[i][j] <= limiar)
             {
                 adicionar_aresta(grafo, i, j);
             }
@@ -165,11 +173,14 @@ int main()
     // executa o script de python que converte o .csv do
     // grafo em um arquivo .dot, que sera usado pelo graphviz
     // para a visualização do grafo
+    printf("Convertendo a lista de adjacencias no arquivo .dot para visualização...\n");
     system("python scripts/csv_to_dot.py");
     // utiliza o graphviz para renderizar o grafo gerado
+    printf("Construindo visualização do grafo...\n");
     system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
     // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
     //system("rm arquivos/dataset arquivos/grafo.dot");
+    printf("Pronto! Gráfico está na pasta arquivos!\n");
 
     return 1;
 }

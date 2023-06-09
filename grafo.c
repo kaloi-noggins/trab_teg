@@ -36,8 +36,7 @@ void dfs(Grafo *grafo, int vertice_inicial, void (*callback)(int)) {
     Stack* stack = cria_stack();
     push(stack, vertice_inicial);
     
-    while( !stack_vazio(stack) ) {
-        pop(stack, &vertice_atual);
+    while( pop(stack, &vertice_atual) ) {
         visitados[vertice_atual] = 1;
         callback(vertice_atual);
         qtd_vizinhos = tamanho(grafo->vetor_vertices[vertice_atual]);

@@ -23,7 +23,7 @@ int main()
     // o pré tratamento consiste na remoção da primeira linha e ultima coluna e
     // a substitução dos , por espaços em branco para tokenização com o strtok
     printf("Fazendo pré processamento do dataset..\n");
-    system("python scripts/dataset_preprocessing.py");
+    system("python3 scripts/dataset_preprocessing.py");
 
     // abertura dos arquivos
     FILE *data_set = fopen("arquivos/dataset", "r");
@@ -164,7 +164,7 @@ int main()
 
         for (size_t k = 0; k < grau_vertice(grafo, i); k++)
         {
-            fprintf(grafo_f, "%d,%d\n", i, temp[k]);
+            fprintf(grafo_f, "%ld,%d\n", i, temp[k]);
         }
 
         free(temp);
@@ -174,12 +174,12 @@ int main()
     // grafo em um arquivo .dot, que sera usado pelo graphviz
     // para a visualização do grafo
     printf("Convertendo a lista de adjacencias no arquivo .dot para visualização...\n");
-    system("python scripts/csv_to_dot.py");
+    system("python3 scripts/csv_to_dot.py");
     // utiliza o graphviz para renderizar o grafo gerado
     printf("Construindo visualização do grafo...\n");
     system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
     // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
-    //system("rm arquivos/dataset arquivos/grafo.dot");
+    system("rm arquivos/grafo.dot");
     printf("Pronto! Gráfico está na pasta arquivos!\n");
 
     return 1;

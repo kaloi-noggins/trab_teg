@@ -10,5 +10,6 @@ Grafo *cria_grafo();
 void adicionar_aresta(Grafo *grafo, int x, int y);
 int *adjacencias(Grafo *grafo, int x);
 int grau_vertice(Grafo *grafo, int x);
+void dfs(Grafo* grafo, int vertice_inicial);
 
 #endif

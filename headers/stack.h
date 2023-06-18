@@ -2,7 +2,7 @@
 #define STACK
 
 typedef struct Nodo_S {
-    Nodo_S* baixo;
+    struct Nodo_S* baixo;
     int valor;
 } Nodo_S;
 

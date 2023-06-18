@@ -4,6 +4,7 @@
 typedef struct Nodo {
     int vertice;
     struct Nodo *proximo;
+    struct Nodo *anterior;
 } Nodo;
 
 typedef struct {
@@ -15,5 +16,7 @@ Lista *cria_lista();
 void add_elem_lista(Lista *lista, int x);
 int *conteudo(Lista *lista);
 int tamanho(Lista* lista);
-
+void destruir_lista(Lista* lista);
+int existe_na_lista(Lista* lista, int x);
+int remover_elem_lista(Lista *lista, int x);
 #endif

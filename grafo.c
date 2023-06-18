@@ -1,7 +1,7 @@
 #include <stdlib.h>
+#include "headers/stack.h"
 #include "headers/lista.h"
 #include "headers/grafo.h"
-#include "headers/stack.h"
 
 void adicionar_aresta(Grafo *grafo, int x, int y) {
    add_elem_lista(grafo->vetor_vertices[x], y);
@@ -24,29 +24,28 @@ int grau_vertice(Grafo *grafo, int x) {
     return tamanho(grafo->vetor_vertices[x]);
 }
 
-void dfs(Grafo *grafo, int vertice_inicial, void (*callback)(int)) {
+// Retorna uma lista com os vértices visitados
+void dfs(Grafo *grafo, int vertice_inicial, Lista* visitados, Lista* nao_visitados) {
 
-    int visitados[150], i, vertice_atual, 
-    *vizinhos = NULL, qtd_vizinhos;
-
-    // Inicializando array de visitados
-    for(i = 0; i < 150; i++)
-        visitados[i] = 0;
-
+    int i, vertice_atual, *vizinhos = NULL, qtd_vizinhos;
     Stack* stack = cria_stack();
     push(stack, vertice_inicial);
     
     while( pop(stack, &vertice_atual) ) {
-        visitados[vertice_atual] = 1;
-        callback(vertice_atual);
-        qtd_vizinhos = tamanho(grafo->vetor_vertices[vertice_atual]);
+
+        remover_elem_lista(nao_visitados, vertice_atual);
+        add_elem_lista(visitados, vertice_atual);
         vizinhos = conteudo(grafo->vetor_vertices[vertice_atual]);
+        qtd_vizinhos = tamanho(grafo->vetor_vertices[vertice_atual]);
         i = 0;
 
         while( i < qtd_vizinhos ) 
-            if ( visitados[vizinhos[i]] == 0 )
+            if ( existe_na_lista(nao_visitados, vizinhos[i]) )
                 push(stack, vizinhos[i]);
         
         free(vizinhos);
+
     }
+
+    free(stack);
 }

@@ -75,25 +75,22 @@ int main()
     {
         for (size_t j = 0; j < NUM_LINHAS; j++)
         {
+            // a distance de um vertice a ele mesmo é 0
             if (i == j)
-            {
-                // a distance de um vertice a ele mesmo é 0
                 distancias[i][j] = 0;
-            }
+
+            // como o grafo não é orientado nem ponderado, as distancias
+            // acima e abaixo da diagonal são iguais
             else if (i > j)
-            {
-                // como o grafo não é orientado nem ponderado, as distancias
-                // acima e abaixo da diagonal são iguais
                 distancias[i][j] = distancias[j][i];
-            }
+
             else
             {
                 // calculo da distancia euclidiana entre cada um dos vertices
                 float soma = 0;
+
                 for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
-                {
                     soma += pow(entrada[j][k] - entrada[i][k], 2);
-                }
 
                 distancias[i][j] = sqrt(soma);
 
@@ -112,9 +109,8 @@ int main()
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
         for (size_t j = 0; j < NUM_LINHAS; j++)
-        {
             printf("%.2f ", distancias[i][j]);
-        }
+        
         printf("\n");
     }
 
@@ -122,9 +118,8 @@ int main()
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
         for (size_t j = 0; j < NUM_LINHAS; j++)
-        {
             distancias[i][j] = ((distancias[i][j] - min) / (max - min));
-        }
+            
     }
 
     // print distancias normalizada
@@ -132,9 +127,8 @@ int main()
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
         for (size_t j = 0; j < NUM_LINHAS; j++)
-        {
             printf("%.2f ", distancias[i][j]);
-        }
+        
         printf("\n");
     }
 
@@ -143,12 +137,9 @@ int main()
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
         for (size_t j = i + 1; j < NUM_LINHAS; j++)
-        {
             if (distancias[i][j] <= limiar)
-            {
                 adicionar_aresta(grafo, i, j);
-            }
-        }
+            
     }
 
     // Persistindo as distâncias e grafo
@@ -181,6 +172,61 @@ int main()
     // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
     system("rm arquivos/grafo.dot");
     printf("Pronto! Gráfico está na pasta arquivos!\n");
+
+    // Realiza clusterização
+    Lista** clusters = (Lista**)malloc(sizeof(Lista*));
+    Lista** maiores[3] = {NULL, NULL, NULL};
+    Lista* nao_visitados = cria_lista();
+    int vertice_inicial = 0;
+    int num_clusters = 0;
+    int centros_geo[3][4];
+    int* vertices_cluster;
+    
+    for (size_t i = 0; i < 150; i++)
+        add_elem_lista(nao_visitados, i);
+    
+    // Percorrendo o grafo e identificando clusters. Tá dando core dumped :(
+    while ( tamanho(nao_visitados) != 0 ) {
+        num_clusters += 1;
+        Lista* visitados = cria_lista();
+        dfs(grafo, vertice_inicial, visitados, nao_visitados);
+        clusters = (Lista**)realloc(clusters, sizeof(Lista*) * num_clusters);
+        clusters[num_clusters - 1] = visitados;
+    }
+    
+    for (size_t i = 0; i < num_clusters; i++) {
+        vertices_cluster = conteudo(clusters[i]);
+        for (size_t j = 0; j < tamanho(clusters[i]); j++)
+            printf("%d ", vertices_cluster[j]);
+        printf("\n");
+        free(vertices_cluster);
+    }
+
+   /* if ( num_clusters >= 3 ) {
+        // Determinando os três maiores clusters
+         for (size_t i = 0; i < num_clusters; i++) {
+            if ( !maiores[0] || tamanho(clusters[i]) > tamanho(maiores[0]) )
+                maiores[0] = clusters[i];
+
+            else if ( !maiores[1] || tamanho(clusters[i]) > tamanho(maiores[1]) )
+                maiores[1] = clusters[i];
+
+            else if ( !maiores[2] || tamanho(clusters[i] > tamanho(maiores[2])) )
+                maiores[2] = clusters[i];
+        } 
+
+        // Determinando os centros geométricos dos três maiores clusters
+        for (size_t i = 0; i < 3; i++) {
+            vertices_cluster = conteudo(maiores[i]);
+
+            for (size_t j = 0; j < tamanho(maiores[i]); j++) 
+                for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
+                    centros_geo[i][k] += entrada[vertices_cluster[j]][k];
+            
+            for
+        }
+    } 
+*/
 
     return 1;
 }

@@ -4,6 +4,7 @@
 Stack* cria_stack() {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     stack->topo = NULL;
+    return stack;
 }
 
 int stack_vazio(Stack* stack) {
@@ -12,7 +13,7 @@ int stack_vazio(Stack* stack) {
 
 int push(Stack* stack, int valor) {
     Nodo_S* novo = (Nodo_S*)malloc(sizeof(Nodo_S));
-    if ( novo = NULL )
+    if ( novo == NULL )
         return 0;
     
     novo->valor = valor;
@@ -29,3 +30,16 @@ int pop(Stack* stack, int* retorno) {
     stack->topo = stack->topo->baixo;
     return 1;
 }
+
+void destroi_stack(Stack* stack) {
+    Nodo_S* temp = stack->topo;
+    Nodo_S* temp1;
+
+    while ( temp != NULL ) {
+        temp1 = temp->baixo;
+        free(temp);
+        temp = temp1;
+    }
+
+    free(stack);
+} 

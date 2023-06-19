@@ -14,5 +14,6 @@ Stack* cria_stack();
 int push(Stack* stack, int valor);
 int pop(Stack* stack, int* retorno);
 int stack_vazio(Stack* stack);
-
+int existe_no_stack(Stack* stack, int x);
+void printa_stack(Stack* stack);
 #endif

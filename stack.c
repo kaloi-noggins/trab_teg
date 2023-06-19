@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "headers/stack.h"
 
 Stack* cria_stack() {
@@ -27,7 +28,9 @@ int pop(Stack* stack, int* retorno) {
         return 0;
     
     *retorno = stack->topo->valor;
-    stack->topo = stack->topo->baixo;
+    Nodo_S* temp = stack->topo->baixo;
+    free(stack->topo);
+    stack->topo = temp;
     return 1;
 }
 
@@ -43,3 +46,39 @@ void destroi_stack(Stack* stack) {
 
     free(stack);
 } 
+
+void printa_stack(Stack* stack) {
+    if ( stack->topo == NULL ) {
+        printf("Stack vazio\n");
+        return;
+    }
+
+    Nodo_S* temp = stack->topo;
+
+    while ( temp != NULL ) {
+        printf("%d ", temp->valor);
+        temp = temp->baixo;
+    }
+
+    printf("\n");
+}
+
+int existe_no_stack(Stack* stack, int x) {
+    if ( stack->topo == NULL )
+        return 0;
+
+    Nodo_S* temp = stack->topo;
+    int encontrou = 0;
+
+    while ( temp != NULL && !encontrou ) {
+        if ( temp->valor == x )
+            encontrou = 1;
+
+        temp = temp->baixo;
+    }
+
+    if ( !encontrou )
+        return 0;
+    
+    return 1;
+}

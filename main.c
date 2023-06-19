@@ -12,12 +12,12 @@
 
 int main()
 {
-    
+
     // limiar que sera usado para a construção da lista de adjacencias
     float limiar = 0.3;
 
     printf("Entre com o limiar a ser usado para o cáculo das adjacencias (entre 0 e 1, 0.3 por padrão):\n");
-    scanf("%f",&limiar);
+    scanf("%f", &limiar);
 
     // executa o script de python para fazer o pré tratamento o dataset
     // o pré tratamento consiste na remoção da primeira linha e ultima coluna e
@@ -60,88 +60,74 @@ int main()
     }
 
     // print entrada
-    printf("Entrada:\n");
-    for (size_t i = 0; i < NUM_LINHAS; i++)
-    {
-        for (size_t j = 0; j < NUM_ATRIBUTOS; j++)
-        {
-            printf("%.2f ", entrada[i][j]);
-        }
-        printf("\n");
-    }
+    // printf("Entrada:\n");
+    // for (size_t i = 0; i < NUM_LINHAS; i++)
+    // {
+    //     for (size_t j = 0; j < NUM_ATRIBUTOS; j++)
+    //     {
+    //         printf("%.2f ", entrada[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     // calculo das distancias
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
         for (size_t j = 0; j < NUM_LINHAS; j++)
         {
-            // a distance de um vertice a ele mesmo é 0
-            if (i == j)
-                distancias[i][j] = 0;
+            // calculo da distancia euclidiana entre cada um dos vertices
+            float soma = 0;
 
-            // como o grafo não é orientado nem ponderado, as distancias
-            // acima e abaixo da diagonal são iguais
-            else if (i > j)
-                distancias[i][j] = distancias[j][i];
+            for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
+                soma += pow(entrada[j][k] - entrada[i][k], 2);
 
-            else
-            {
-                // calculo da distancia euclidiana entre cada um dos vertices
-                float soma = 0;
+            distancias[i][j] = sqrt(soma);
 
-                for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
-                    soma += pow(entrada[j][k] - entrada[i][k], 2);
+            // atualiza os minimos e máximos para normalização
+            if (distancias[i][j] > max)
+                max = distancias[i][j];
 
-                distancias[i][j] = sqrt(soma);
-
-                // atualiza os minimos e máximos para normalização
-                if (distancias[i][j] > max)
-                    max = distancias[i][j];
-
-                else if (distancias[i][j] < min)
-                    min = distancias[i][j];
-            }
+            else if (distancias[i][j] < min)
+                min = distancias[i][j];
         }
     }
 
     // print distancias
-    printf("Distancias:\n");
-    for (size_t i = 0; i < NUM_LINHAS; i++)
-    {
-        for (size_t j = 0; j < NUM_LINHAS; j++)
-            printf("%.2f ", distancias[i][j]);
-        
-        printf("\n");
-    }
+    // printf("Distancias:\n");
+    // for (size_t i = 0; i < NUM_LINHAS; i++)
+    // {
+    //     for (size_t j = 0; j < NUM_LINHAS; j++)
+    //         printf("%.2f ", distancias[i][j]);
+
+    //     printf("\n");
+    // }
 
     // normalização das distancias
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
         for (size_t j = 0; j < NUM_LINHAS; j++)
             distancias[i][j] = ((distancias[i][j] - min) / (max - min));
-            
     }
 
     // print distancias normalizada
-    printf("Distancias normalizada:\n");
-    for (size_t i = 0; i < NUM_LINHAS; i++)
-    {
-        for (size_t j = 0; j < NUM_LINHAS; j++)
-            printf("%.2f ", distancias[i][j]);
-        
-        printf("\n");
-    }
+    // printf("Distancias normalizada:\n");
+    // for (size_t i = 0; i < NUM_LINHAS; i++)
+    // {
+    //     for (size_t j = 0; j < NUM_LINHAS; j++)
+    //         printf("%.2f ", distancias[i][j]);
+
+    //     printf("\n");
+    // }
 
     // Verifica por adjacencias. Como o grafo não é orientado nem ponderado
     // somente a parte inferior a diagonal da matriz é contada
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
-        for (size_t j = i + 1; j < NUM_LINHAS; j++)
-            if (distancias[i][j] <= limiar)
+        for (size_t j = 0; j < NUM_LINHAS; j++)
+            if (distancias[i][j] <= limiar && i != j)
                 adicionar_aresta(grafo, i, j);
-            
     }
-
+    
     // Persistindo as distâncias e grafo
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
@@ -161,72 +147,96 @@ int main()
         free(temp);
     }
 
+    printa_grafo(grafo);
+    
     // executa o script de python que converte o .csv do
     // grafo em um arquivo .dot, que sera usado pelo graphviz
     // para a visualização do grafo
-    printf("Convertendo a lista de adjacencias no arquivo .dot para visualização...\n");
-    system("python3 scripts/csv_to_dot.py");
-    // utiliza o graphviz para renderizar o grafo gerado
-    printf("Construindo visualização do grafo...\n");
-    system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
-    // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
-    system("rm arquivos/grafo.dot");
-    printf("Pronto! Gráfico está na pasta arquivos!\n");
+    // printf("Convertendo a lista de adjacencias no arquivo .dot para visualização...\n");
+    // system("python3 scripts/csv_to_dot.py");
+    // // utiliza o graphviz para renderizar o grafo gerado
+    // printf("Construindo visualização do grafo...\n");
+    // system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
+    // // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
+    // // system("rm arquivos/grafo.dot");
+    // printf("Pronto! Gráfico está na pasta arquivos!\n");
 
     // Realiza clusterização
-    Lista** clusters = (Lista**)malloc(sizeof(Lista*));
-    Lista** maiores[3] = {NULL, NULL, NULL};
+    Lista** clusters = (Lista **)malloc(sizeof(Lista *));
+    Lista* maiores[3] = {NULL, NULL, NULL};
     Lista* nao_visitados = cria_lista();
     int vertice_inicial = 0;
     int num_clusters = 0;
-    int centros_geo[3][4];
-    int* vertices_cluster;
-    
+    float centros_geo[3][4];
+    int *vertices_cluster;
+
     for (size_t i = 0; i < 150; i++)
         add_elem_lista(nao_visitados, i);
-    
-    // Percorrendo o grafo e identificando clusters. Tá dando core dumped :(
-    while ( tamanho(nao_visitados) != 0 ) {
+
+    while (tamanho(nao_visitados) != 0)
+    {
+        peek_top(nao_visitados, &vertice_inicial);
         num_clusters += 1;
-        Lista* visitados = cria_lista();
+        Lista *visitados = cria_lista();
         dfs(grafo, vertice_inicial, visitados, nao_visitados);
-        clusters = (Lista**)realloc(clusters, sizeof(Lista*) * num_clusters);
+        printf("%s\n", "--Fim iteração--");
+        clusters = (Lista **)realloc(clusters, sizeof(Lista *) * num_clusters);
         clusters[num_clusters - 1] = visitados;
     }
-    
-    for (size_t i = 0; i < num_clusters; i++) {
-        vertices_cluster = conteudo(clusters[i]);
-        for (size_t j = 0; j < tamanho(clusters[i]); j++)
-            printf("%d ", vertices_cluster[j]);
-        printf("\n");
-        free(vertices_cluster);
-    }
 
-   /* if ( num_clusters >= 3 ) {
-        // Determinando os três maiores clusters
-         for (size_t i = 0; i < num_clusters; i++) {
-            if ( !maiores[0] || tamanho(clusters[i]) > tamanho(maiores[0]) )
-                maiores[0] = clusters[i];
+    // // Printa os clusters
+    // for (size_t i = 0; i < num_clusters; i++)
+    // {
+    //     vertices_cluster = conteudo(clusters[i]);
+    //     printf("\n--Cluster--\n");
+    //     int temp = 0;
+    //     for (size_t j = 0; j < tamanho(clusters[i]); j++)
+    //     {
+    //         printf("%d ", vertices_cluster[j]);
+    //         temp++;
+    //     }
+    //     printf("\n--Fim do cluster--\n");
+    //     printf("%d\n", temp);
+    //     free(vertices_cluster);
+    // }
 
-            else if ( !maiores[1] || tamanho(clusters[i]) > tamanho(maiores[1]) )
-                maiores[1] = clusters[i];
+        if ( num_clusters >= 3 ) {
+         // Determinando os três maiores clusters
+            for (size_t i = 0; i < num_clusters; i++) {
+                if ( !maiores[0] || tamanho(clusters[i]) > tamanho(maiores[0]) )
+                    maiores[0] = clusters[i];
 
-            else if ( !maiores[2] || tamanho(clusters[i] > tamanho(maiores[2])) )
-                maiores[2] = clusters[i];
-        } 
+                else if ( !maiores[1] || tamanho(clusters[i]) > tamanho(maiores[1]) )
+                    maiores[1] = clusters[i];
 
-        // Determinando os centros geométricos dos três maiores clusters
-        for (size_t i = 0; i < 3; i++) {
+                else if ( !maiores[2] || tamanho(clusters[i]) > tamanho(maiores[2]) )
+                    maiores[2] = clusters[i];
+         }
+
+         // Determinando os centros geométricos dos três maiores clusters
+            for (size_t i = 0; i < 3; i++) {
             vertices_cluster = conteudo(maiores[i]);
-
-            for (size_t j = 0; j < tamanho(maiores[i]); j++) 
+            int tamanho_cluster = tamanho(maiores[i]);
+            // Percorrendo vértices do cluster
+            for (size_t j = 0; j < tamanho_cluster; j++) {
+                // Somando atributos dos vértices
                 for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
                     centros_geo[i][k] += entrada[vertices_cluster[j]][k];
-            
-            for
-        }
-    } 
-*/
+                // Divindo pela quantidade de vértices, determinando a média
+                for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
+                    centros_geo[i][k] = centros_geo[i][k] / tamanho_cluster;
+
+             }
+         }
+
+         for (size_t i = 0; i < 3; i++) {
+            printf("Centro geométrico %ld: ", i);
+            for (size_t j = 0; j < 4; j++) {
+                printf("%f ", centros_geo[i][j]);
+            }
+            printf("\n");
+         }
+     }
 
     return 1;
 }

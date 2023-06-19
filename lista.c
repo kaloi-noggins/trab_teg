@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "headers/lista.h"
 
 Lista *cria_lista(){ 
@@ -60,7 +61,6 @@ int existe_na_lista(Lista* lista, int x) {
     int encontrou = 0;
 
     while ( temp != NULL && !encontrou ) {
-
         if ( temp->vertice == x )
             encontrou = 1;
 
@@ -77,10 +77,16 @@ int remover_elem_lista(Lista* lista, int x) {
     if ( tamanho(lista) == 0 )
         return 0;
 
-    Nodo* temp = lista->comeco->proximo;
+    if ( tamanho(lista) == 1 ) {
+        free(lista->comeco);
+        lista->comeco = NULL;
+        lista->tamanho -= 1;
+        return 1;
+    }
 
-    if ( lista->comeco->vertice == x ) {
-        lista->comeco->proximo->anterior = NULL;
+    Nodo* temp = lista->comeco;
+    
+    if ( temp->vertice == x ) {
         temp = lista->comeco->proximo;
         free(lista->comeco);
         lista->comeco = temp;
@@ -99,15 +105,41 @@ int remover_elem_lista(Lista* lista, int x) {
     }
 
     if ( encontrou ) {
+        if( temp->proximo ) 
+            temp->proximo->anterior = temp->anterior;
+        
         temp->anterior->proximo = temp->proximo;
-        temp->proximo->anterior = temp->anterior;
         free(temp);
         lista->tamanho -= 1;
+        return 1;
     }
 
     return 0;
 }
 
+int peek_top(Lista* lista, int* retorno) {
+    if ( tamanho(lista) == 0 ) 
+        return 0;
+    
+    *retorno = lista->comeco->vertice;
+    return 1;
+}
+
 int tamanho(Lista* lista) {
     return lista->tamanho;
+}
+
+void printa_lista(Lista* lista) {
+    if ( tamanho(lista) == 0 ) {
+        printf("Lista vazia\n");
+        return;
+    }
+
+    Nodo* temp = lista->comeco;
+    while ( temp != NULL ) {
+        printf("%d->", temp->vertice);
+        temp = temp->proximo;
+    }
+    
+    printf("//\n");
 }

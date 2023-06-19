@@ -19,4 +19,7 @@ int tamanho(Lista* lista);
 void destruir_lista(Lista* lista);
 int existe_na_lista(Lista* lista, int x);
 int remover_elem_lista(Lista *lista, int x);
+int peek_top(Lista* lista, int* retorno);
+void printa_lista(Lista* lista);
+
 #endif

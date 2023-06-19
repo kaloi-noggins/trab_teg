@@ -29,3 +29,7 @@ class Grafo:
 
         for key in grafo_ordenado:
             print("{}:{}".format(key,self.grafo[key]))
+
+    def grau_vertice(self, i):
+        grau = len(self.grafo[i])
+        return grau

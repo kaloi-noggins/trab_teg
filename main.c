@@ -12,12 +12,8 @@
 
 int main()
 {
-
-    // limiar que sera usado para a construção da lista de adjacencias
-    float limiar = 0.3;
-
-    printf("Entre com o limiar a ser usado para o cáculo das adjacencias (entre 0 e 1, 0.3 por padrão):\n");
-    scanf("%f", &limiar);
+    // printf("Entre com o limiar a ser usado para o cáculo das adjacencias (entre 0 e 1, 0.3 por padrão):\n");
+    // scanf("%f", &limiar);
 
     // executa o script de python para fazer o pré tratamento o dataset
     // o pré tratamento consiste na remoção da primeira linha e ultima coluna e
@@ -119,15 +115,65 @@ int main()
     //     printf("\n");
     // }
 
-    // Verifica por adjacencias. Como o grafo não é orientado nem ponderado
-    // somente a parte inferior a diagonal da matriz é contada
-    for (size_t i = 0; i < NUM_LINHAS; i++)
+    // numero de clusters
+    int num_clusters = 0;
+    // numero de iteracoes
+    int iteracoes = 0;
+    // limiar que sera usado para a construção da lista de adjacencias e delta
+    float limiar = 0.3;
+    float delta = 0.00001;
+    // lista de clusters
+    Lista **clusters = (Lista **)malloc(sizeof(Lista *));
+
+    // itera incrementando o limiar com o delta até encontrar os 3 clusters
+    while (num_clusters != 3)
     {
-        for (size_t j = 0; j < NUM_LINHAS; j++)
-            if (distancias[i][j] <= limiar && i != j)
-                adicionar_aresta(grafo, i, j);
+        if (iteracoes > 0)
+        {
+            for (size_t i = 0; i < num_clusters; i++)
+            {
+                destruir_lista(clusters[i]);
+            }
+            free(clusters);
+            clusters = (Lista **)malloc(sizeof(Lista *));
+            destruir_grafo(grafo);
+            grafo = cria_grafo();
+        }
+
+        // Verifica por adjacencias. Como o grafo não é orientado nem ponderado
+        // somente a parte inferior a diagonal da matriz é contada
+        for (size_t i = 0; i < NUM_LINHAS; i++)
+        {
+            for (size_t j = 0; j < NUM_LINHAS; j++)
+                if (distancias[i][j] <= limiar && i != j)
+                    adicionar_aresta(grafo, i, j);
+        }
+
+        // Realiza clusterização
+        // Lista *maiores[3] = {NULL, NULL, NULL};
+        int vertice_inicial = 0;
+        Lista *nao_visitados = cria_lista();
+        // float centros_geo[3][4];
+
+        for (size_t i = 0; i < 150; i++)
+            add_elem_lista(nao_visitados, i);
+
+        while (tamanho(nao_visitados) != 0)
+        {
+            peek_top(nao_visitados, &vertice_inicial);
+            num_clusters += 1;
+            Lista *visitados = cria_lista();
+            dfs(grafo, vertice_inicial, visitados, nao_visitados);
+            clusters = (Lista **)realloc(clusters, sizeof(Lista *) * num_clusters);
+            clusters[num_clusters - 1] = visitados;
+        }
+
+        iteracoes++;
+        limiar -= delta;
+        num_clusters = 0;
+        printf("limiar atual:%f\n",limiar);
     }
-    
+
     // Persistindo as distâncias e grafo
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
@@ -148,7 +194,7 @@ int main()
     }
 
     printa_grafo(grafo);
-    
+
     // executa o script de python que converte o .csv do
     // grafo em um arquivo .dot, que sera usado pelo graphviz
     // para a visualização do grafo
@@ -161,82 +207,93 @@ int main()
     // // system("rm arquivos/grafo.dot");
     // printf("Pronto! Gráfico está na pasta arquivos!\n");
 
-    // Realiza clusterização
-    Lista** clusters = (Lista **)malloc(sizeof(Lista *));
-    Lista* maiores[3] = {NULL, NULL, NULL};
-    Lista* nao_visitados = cria_lista();
-    int vertice_inicial = 0;
-    int num_clusters = 0;
-    float centros_geo[3][4];
-    int *vertices_cluster;
-
-    for (size_t i = 0; i < 150; i++)
-        add_elem_lista(nao_visitados, i);
-
-    while (tamanho(nao_visitados) != 0)
-    {
-        peek_top(nao_visitados, &vertice_inicial);
-        num_clusters += 1;
-        Lista *visitados = cria_lista();
-        dfs(grafo, vertice_inicial, visitados, nao_visitados);
-        printf("%s\n", "--Fim iteração--");
-        clusters = (Lista **)realloc(clusters, sizeof(Lista *) * num_clusters);
-        clusters[num_clusters - 1] = visitados;
-    }
-
-    // // Printa os clusters
-    // for (size_t i = 0; i < num_clusters; i++)
+    // vetor com os indices dos 3 maiores clusters
+    // int indice_maiores[3];
+    // if (num_clusters >= 3)
     // {
-    //     vertices_cluster = conteudo(clusters[i]);
-    //     printf("\n--Cluster--\n");
-    //     int temp = 0;
-    //     for (size_t j = 0; j < tamanho(clusters[i]); j++)
+    //     // Determinando os três maiores clusters
+    //     for (size_t i = 0; i < num_clusters; i++)
     //     {
-    //         printf("%d ", vertices_cluster[j]);
-    //         temp++;
+    //         if (!maiores[0] || tamanho(clusters[i]) > tamanho(maiores[0]))
+    //         {
+    //             maiores[0] = clusters[i];
+    //             for (size_t j = i; i < num_clusters - 1; j++)
+    //             {
+    //                 clusters[j] = clusters[j + 1]
+    //             }
+
+    //             indice_maiores[0] = i;
+    //         }
+    //         else if (!maiores[1] || tamanho(clusters[i]) > tamanho(maiores[1]))
+    //         {
+    //             maiores[1] = clusters[i];
+    //             indice_maiores[1] = i;
+    //         }
+    //         else if (!maiores[2] || tamanho(clusters[i]) > tamanho(maiores[2]))
+    //         {
+    //             maiores[2] = clusters[i];
+    //             indice_maiores[2] = i;
+    //         }
     //     }
-    //     printf("\n--Fim do cluster--\n");
-    //     printf("%d\n", temp);
-    //     free(vertices_cluster);
     // }
 
-        if ( num_clusters >= 3 ) {
-         // Determinando os três maiores clusters
-            for (size_t i = 0; i < num_clusters; i++) {
-                if ( !maiores[0] || tamanho(clusters[i]) > tamanho(maiores[0]) )
-                    maiores[0] = clusters[i];
+    // copia os clusters menores para uma nova lista sem os clusters maiores
+    // Lista **clusters_menores = (Lista **)malloc(sizeof(Lista *));
+    // int num_clusters_menores = num_clusters - 3;
+    // for (size_t i = 0; i < num_clusters; i++)
+    // {
+    //     if (i != indice_maiores[0] && i != indice_maiores[0] && i != indice_maiores[0])
+    //     {
+    //         clusters_menores = (Lista **)realloc(clusters_menores, sizeof(Lista *) * num_clusters_menores);
+    //         clusters_menores[num_clusters_menores - 1] = clusters[i];
+    //     }
+    // }
 
-                else if ( !maiores[1] || tamanho(clusters[i]) > tamanho(maiores[1]) )
-                    maiores[1] = clusters[i];
+    // Determinando os centros geométricos dos três maiores clusters
+    // for (size_t i = 0; i < 3; i++)
+    // {
+    //     vertices_cluster = conteudo(maiores[i]);
+    //     int tamanho_cluster = tamanho(maiores[i]);
+    //     // Percorrendo vértices do cluster
+    //     for (size_t j = 0; j < tamanho_cluster; j++)
+    //     {
+    //         // Somando atributos dos vértices
+    //         for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
+    //             centros_geo[i][k] += entrada[vertices_cluster[j]][k];
+    //         // Divindo pela quantidade de vértices, determinando a média
+    //         for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
+    //             centros_geo[i][k] = centros_geo[i][k] / tamanho_cluster;
+    //     }
+    // }
 
-                else if ( !maiores[2] || tamanho(clusters[i]) > tamanho(maiores[2]) )
-                    maiores[2] = clusters[i];
-         }
+    // print centros geométricos
+    // for (size_t i = 0; i < 3; i++)
+    // {
+    //     printf("Centro geométrico %ld: ", i);
+    //     for (size_t j = 0; j < 4; j++)
+    //     {
+    //         printf("%f ", centros_geo[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
-         // Determinando os centros geométricos dos três maiores clusters
-            for (size_t i = 0; i < 3; i++) {
-            vertices_cluster = conteudo(maiores[i]);
-            int tamanho_cluster = tamanho(maiores[i]);
-            // Percorrendo vértices do cluster
-            for (size_t j = 0; j < tamanho_cluster; j++) {
-                // Somando atributos dos vértices
-                for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
-                    centros_geo[i][k] += entrada[vertices_cluster[j]][k];
-                // Divindo pela quantidade de vértices, determinando a média
-                for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
-                    centros_geo[i][k] = centros_geo[i][k] / tamanho_cluster;
+    // Printa os clusters
+    int *vertices_cluster;
+    for (size_t i = 0; i < num_clusters; i++)
+    {
+        vertices_cluster = conteudo(clusters[i]);
+        printf("\n--Cluster--\n");
+        int temp = 0;
+        for (size_t j = 0; j < tamanho(clusters[i]); j++)
+        {
+            printf("%d ", vertices_cluster[j]);
+            temp++;
+        }
+        printf("\n--Fim do cluster--\n");
+        printf("%d\n", temp);
+        free(vertices_cluster);
+    }
 
-             }
-         }
-
-         for (size_t i = 0; i < 3; i++) {
-            printf("Centro geométrico %ld: ", i);
-            for (size_t j = 0; j < 4; j++) {
-                printf("%f ", centros_geo[i][j]);
-            }
-            printf("\n");
-         }
-     }
-
+    printf("%f\n", limiar);
     return 1;
 }

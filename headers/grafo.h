@@ -12,4 +12,5 @@ int *adjacencias(Grafo *grafo, int x);
 int grau_vertice(Grafo *grafo, int x);
 void dfs(Grafo* grafo, int vertice_inicial, Lista* visitados, Lista* nao_visitados);
 void printa_grafo(Grafo* grafo);
+void destruir_grafo(Grafo* grafo);
 #endif

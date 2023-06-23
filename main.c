@@ -12,9 +12,6 @@
 
 int main()
 {
-    // printf("Entre com o limiar a ser usado para o cáculo das adjacencias (entre 0 e 1, 0.3 por padrão):\n");
-    // scanf("%f", &limiar);
-
     // executa o script de python para fazer o pré tratamento o dataset
     // o pré tratamento consiste na remoção da primeira linha e ultima coluna e
     // a substitução dos , por espaços em branco para tokenização com o strtok
@@ -25,6 +22,8 @@ int main()
     FILE *data_set = fopen("arquivos/dataset", "r");
     FILE *distancias_f = fopen("arquivos/distancias_normalizadas.csv", "w");
     FILE *grafo_f = fopen("arquivos/lista_adjacencias.csv", "w");
+    FILE *clusters_f = fopen("arquivos/clusters.json", "w");
+    FILE *grafo_dot = fopen("arquivos/grafo.dot", "w");
 
     if (!data_set)
         return -1;
@@ -55,17 +54,6 @@ int main()
         }
     }
 
-    // print entrada
-    // printf("Entrada:\n");
-    // for (size_t i = 0; i < NUM_LINHAS; i++)
-    // {
-    //     for (size_t j = 0; j < NUM_ATRIBUTOS; j++)
-    //     {
-    //         printf("%.2f ", entrada[i][j]);
-    //     }
-    //     printf("\n");
-    // }
-
     // calculo das distancias
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
@@ -88,16 +76,6 @@ int main()
         }
     }
 
-    // print distancias
-    // printf("Distancias:\n");
-    // for (size_t i = 0; i < NUM_LINHAS; i++)
-    // {
-    //     for (size_t j = 0; j < NUM_LINHAS; j++)
-    //         printf("%.2f ", distancias[i][j]);
-
-    //     printf("\n");
-    // }
-
     // normalização das distancias
     for (size_t i = 0; i < NUM_LINHAS; i++)
     {
@@ -105,28 +83,18 @@ int main()
             distancias[i][j] = ((distancias[i][j] - min) / (max - min));
     }
 
-    // print distancias normalizada
-    // printf("Distancias normalizada:\n");
-    // for (size_t i = 0; i < NUM_LINHAS; i++)
-    // {
-    //     for (size_t j = 0; j < NUM_LINHAS; j++)
-    //         printf("%.2f ", distancias[i][j]);
-
-    //     printf("\n");
-    // }
-
     // numero de clusters
     int num_clusters = 0;
     // numero de iteracoes
     int iteracoes = 0;
     // limiar que sera usado para a construção da lista de adjacencias e delta
-    float limiar = 0.3;
+    float limiar = 0.15;
     float delta = 0.00001;
     // lista de clusters
     Lista **clusters = (Lista **)malloc(sizeof(Lista *));
 
     // itera incrementando o limiar com o delta até encontrar os 3 clusters
-    while (num_clusters != 3)
+    while (num_clusters != 4)
     {
         if (iteracoes > 0)
         {
@@ -138,6 +106,7 @@ int main()
             clusters = (Lista **)malloc(sizeof(Lista *));
             destruir_grafo(grafo);
             grafo = cria_grafo();
+            num_clusters = 0;
         }
 
         // Verifica por adjacencias. Como o grafo não é orientado nem ponderado
@@ -170,8 +139,9 @@ int main()
 
         iteracoes++;
         limiar -= delta;
-        num_clusters = 0;
-        printf("limiar atual:%f\n",limiar);
+
+        if (iteracoes % 1000 == 0)
+            printf("iteracao: %d\nlimiar atual:%f\n", iteracoes, limiar);
     }
 
     // Persistindo as distâncias e grafo
@@ -193,107 +163,75 @@ int main()
         free(temp);
     }
 
+    printf("Grafo:\n");
     printa_grafo(grafo);
 
-    // executa o script de python que converte o .csv do
-    // grafo em um arquivo .dot, que sera usado pelo graphviz
-    // para a visualização do grafo
-    // printf("Convertendo a lista de adjacencias no arquivo .dot para visualização...\n");
-    // system("python3 scripts/csv_to_dot.py");
-    // // utiliza o graphviz para renderizar o grafo gerado
-    // printf("Construindo visualização do grafo...\n");
-    // system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
-    // // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
-    // // system("rm arquivos/grafo.dot");
-    // printf("Pronto! Gráfico está na pasta arquivos!\n");
+    printf("Limiar usado: %f\n", limiar);
 
-    // vetor com os indices dos 3 maiores clusters
-    // int indice_maiores[3];
-    // if (num_clusters >= 3)
-    // {
-    //     // Determinando os três maiores clusters
-    //     for (size_t i = 0; i < num_clusters; i++)
-    //     {
-    //         if (!maiores[0] || tamanho(clusters[i]) > tamanho(maiores[0]))
-    //         {
-    //             maiores[0] = clusters[i];
-    //             for (size_t j = i; i < num_clusters - 1; j++)
-    //             {
-    //                 clusters[j] = clusters[j + 1]
-    //             }
-
-    //             indice_maiores[0] = i;
-    //         }
-    //         else if (!maiores[1] || tamanho(clusters[i]) > tamanho(maiores[1]))
-    //         {
-    //             maiores[1] = clusters[i];
-    //             indice_maiores[1] = i;
-    //         }
-    //         else if (!maiores[2] || tamanho(clusters[i]) > tamanho(maiores[2]))
-    //         {
-    //             maiores[2] = clusters[i];
-    //             indice_maiores[2] = i;
-    //         }
-    //     }
-    // }
-
-    // copia os clusters menores para uma nova lista sem os clusters maiores
-    // Lista **clusters_menores = (Lista **)malloc(sizeof(Lista *));
-    // int num_clusters_menores = num_clusters - 3;
-    // for (size_t i = 0; i < num_clusters; i++)
-    // {
-    //     if (i != indice_maiores[0] && i != indice_maiores[0] && i != indice_maiores[0])
-    //     {
-    //         clusters_menores = (Lista **)realloc(clusters_menores, sizeof(Lista *) * num_clusters_menores);
-    //         clusters_menores[num_clusters_menores - 1] = clusters[i];
-    //     }
-    // }
-
-    // Determinando os centros geométricos dos três maiores clusters
-    // for (size_t i = 0; i < 3; i++)
-    // {
-    //     vertices_cluster = conteudo(maiores[i]);
-    //     int tamanho_cluster = tamanho(maiores[i]);
-    //     // Percorrendo vértices do cluster
-    //     for (size_t j = 0; j < tamanho_cluster; j++)
-    //     {
-    //         // Somando atributos dos vértices
-    //         for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
-    //             centros_geo[i][k] += entrada[vertices_cluster[j]][k];
-    //         // Divindo pela quantidade de vértices, determinando a média
-    //         for (size_t k = 0; k < NUM_ATRIBUTOS; k++)
-    //             centros_geo[i][k] = centros_geo[i][k] / tamanho_cluster;
-    //     }
-    // }
-
-    // print centros geométricos
-    // for (size_t i = 0; i < 3; i++)
-    // {
-    //     printf("Centro geométrico %ld: ", i);
-    //     for (size_t j = 0; j < 4; j++)
-    //     {
-    //         printf("%f ", centros_geo[i][j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // Printa os clusters
+    // Printa os clusters no terminal e faz arquivo dot para visaulização =
     int *vertices_cluster;
+    fprintf(clusters_f, "{\n");
     for (size_t i = 0; i < num_clusters; i++)
     {
         vertices_cluster = conteudo(clusters[i]);
+
+        fprintf(clusters_f, "\"cluster_%ld\":[", i);
+
         printf("\n--Cluster--\n");
         int temp = 0;
         for (size_t j = 0; j < tamanho(clusters[i]); j++)
         {
+            if (j == tamanho(clusters[i]) - 1)
+            {
+                fprintf(clusters_f, "%d", vertices_cluster[j]);
+            }
+            else
+            {
+                fprintf(clusters_f, "%d,", vertices_cluster[j]);
+            }
+
             printf("%d ", vertices_cluster[j]);
             temp++;
         }
+
+        fprintf(clusters_f, "],\n");
+
+        printf("\nTamanho do cluster: %d", temp);
         printf("\n--Fim do cluster--\n");
-        printf("%d\n", temp);
         free(vertices_cluster);
     }
+    fprintf(clusters_f, "}");
 
-    printf("%f\n", limiar);
+    // construção do .dot para display do grafo
+    fprintf(grafo_dot, "graph G{\n");
+    for (size_t i = 0; i < NUM_LINHAS; i++)
+    {
+        int *temp = adjacencias(grafo, i);
+        for (size_t j = 0; j < tamanho(grafo->vetor_vertices[i]); j++)
+        {
+            if (j == tamanho(grafo->vetor_vertices[i]) - 1)
+            {
+                fprintf(grafo_dot, "   %ld--%d\n", i, temp[j]);
+            }
+            else
+            {
+                fprintf(grafo_dot, "   %ld--%d,\n", i, temp[j]);
+            }
+        }
+    }
+    fprintf(grafo_dot, "}");
+
+    // executa o script de python que converte o .csv do
+    // grafo em um arquivo .dot, que sera usado pelo graphviz
+    // para a visualização do grafo
+    printf("\nConvertendo a lista de adjacencias no arquivo .dot para visualização...\n");
+    // system("python3 scripts/csv_to_dot.py");
+    //  utiliza o graphviz para renderizar o grafo gerado
+    printf("Construindo visualização do grafo...\n");
+    system("neato -x -Goverlap=scale -Tpng arquivos/grafo.dot > arquivos/grafo.png");
+    // limpeza dos arquivos temporarios. Descomentar linha abaixo para limpar
+    // system("rm arquivos/grafo.dot");
+    printf("Pronto! Gráfico está na pasta arquivos!\n");
+
     return 1;
 }
